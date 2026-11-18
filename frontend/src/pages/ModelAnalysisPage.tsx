@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu, BarChart2, CheckCircle2, RefreshCw, AlertCircle, Layers, ShieldCheck } from 'lucide-react';
 import { ModelMetricsApiResponse, ModelMetricItem } from '../types';
+import { API_BASE_URL } from '../config/api';
 
 export const ModelAnalysisPage: React.FC = () => {
   const [metricsData, setMetricsData] = useState<ModelMetricsApiResponse | null>(null);
@@ -10,7 +11,7 @@ export const ModelAnalysisPage: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://localhost:8001/api/model/metrics')
+    fetch(`${API_BASE_URL}/api/model/metrics`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch validation metrics`);
         return res.json();
@@ -93,7 +94,7 @@ export const ModelAnalysisPage: React.FC = () => {
         <div className="flex h-64 flex-col items-center justify-center rounded-xl border border-rose-900/50 bg-rose-950/20 p-6 text-rose-300 gap-2">
           <AlertCircle className="h-8 w-8 text-rose-400" />
           <span className="font-semibold text-sm">{error}</span>
-          <span className="text-xs text-zinc-400">Ensure the FastAPI server is running on port 8001.</span>
+          <span className="text-xs text-zinc-400">Ensure the FastAPI backend server is accessible.</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

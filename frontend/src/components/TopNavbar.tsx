@@ -88,8 +88,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             }`}
           />
           <span className="text-[11px] font-mono">
-            API :8001 <span className={backendHealthy ? 'text-emerald-400' : 'text-rose-400'}>
-              {backendHealthy ? 'Connected' : 'Offline'}
+            API <span className={backendHealthy ? 'text-emerald-400' : 'text-rose-400'}>
+              {backendHealthy ? 'Online' : 'Offline'}
             </span>
           </span>
         </div>

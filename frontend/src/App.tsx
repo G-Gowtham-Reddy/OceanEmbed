@@ -6,15 +6,16 @@ import { ThreeDOceanPage } from './pages/ThreeDOceanPage';
 import { PredictionPage } from './pages/PredictionPage';
 import { ModelAnalysisPage } from './pages/ModelAnalysisPage';
 import { AboutProjectPage } from './pages/AboutProjectPage';
+import { API_BASE_URL } from './config/api';
 
 export const App: React.FC = () => {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
 
-  // Poll backend health check on port 8001
+  // Poll backend health check
   useEffect(() => {
     const checkHealth = () => {
-      fetch('http://localhost:8001/api/health')
+      fetch(`${API_BASE_URL}/api/health`)
         .then((res) => {
           if (!res.ok) throw new Error('Unhealthy');
           return res.json();

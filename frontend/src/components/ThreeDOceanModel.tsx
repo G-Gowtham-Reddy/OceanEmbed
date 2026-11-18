@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { RotateCw, Maximize2, Layers, Compass, Waves } from 'lucide-react';
+import { RotateCw, Maximize2, Layers, Waves } from 'lucide-react';
 
 export interface DepthProfilePoint {
   depth: number;
@@ -336,7 +336,6 @@ export const ThreeDOceanModel: React.FC<ThreeDOceanModelProps> = ({
     // 5. Procedural Seabed Craggy Rocks & Marine Kelp Plants
     const rockMat = new THREE.MeshPhongMaterial({
       color: 0x0f172a,
-      roughness: 0.85,
       shininess: 10,
     });
     const rockGeo = new THREE.DodecahedronGeometry(0.7, 1);

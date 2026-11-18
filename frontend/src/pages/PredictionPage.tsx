@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { PredictionResponseData, ArgoProfileItem } from '../types';
 import { checkIsOcean } from '../components/OceanMap';
+import { API_BASE_URL } from '../config/api';
 
 export const PredictionPage: React.FC = () => {
   // Input parameters
@@ -38,7 +39,7 @@ export const PredictionPage: React.FC = () => {
 
   // Fetch preset Argo profiles on mount
   useEffect(() => {
-    fetch('http://localhost:8001/api/ocean/profiles?limit=12')
+    fetch(`${API_BASE_URL}/api/ocean/profiles?limit=12`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.profiles) {
@@ -115,7 +116,7 @@ export const PredictionPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch('http://localhost:8001/api/predict', {
+      const res = await fetch(`${API_BASE_URL}/api/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -138,7 +139,7 @@ export const PredictionPage: React.FC = () => {
       setPredictionResult(data);
       setHasUnsavedChanges(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to connect to backend prediction engine on port 8001');
+      setError(err.message || 'Failed to connect to backend prediction engine');
     } finally {
       setIsInferring(false);
     }
@@ -383,7 +384,7 @@ export const PredictionPage: React.FC = () => {
           <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-[11px] text-zinc-400 space-y-1">
             <div className="font-semibold text-zinc-200">Production Inference Engine:</div>
             <p>
-              Calls 20 calibrated depth models simultaneously on FastAPI (:8001), returning continuous vertical stratification $T(z)$ from surface skin to 1500m.
+              Calls 20 calibrated depth models simultaneously on FastAPI backend, returning continuous vertical stratification $T(z)$ from surface skin to 1500m.
             </p>
           </div>
         </div>

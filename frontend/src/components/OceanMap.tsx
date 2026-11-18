@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { RegionInfo, ArgoProfileItem, OceanApiResponse, PredictionResponseData } from '../types';
 import oceanLandMask from '../data/ocean_land_mask.json';
+import { API_BASE_URL } from '../config/api';
 
 // Authoritative Land-Sea Mask Validation (CMEMS / NOAA 0.25-deg grid)
 export const checkIsOcean = (lat: number, lon: number): { isOcean: boolean; message: string } => {
@@ -160,7 +161,7 @@ export const OceanMap: React.FC<OceanMapProps> = ({
   // Load genuine Argo profiles from backend
   useEffect(() => {
     setLoadingFloats(true);
-    fetch('http://localhost:8001/api/ocean/profiles')
+    fetch(`${API_BASE_URL}/api/ocean/profiles`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load Argo profiles');
         return res.json();
@@ -217,7 +218,7 @@ export const OceanMap: React.FC<OceanMapProps> = ({
       }, regions[0] || { baseSst: 29.0 });
 
       // Call backend live inference POST /api/predict
-      const res = await fetch('http://localhost:8001/api/predict', {
+      const res = await fetch(`${API_BASE_URL}/api/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -280,7 +281,7 @@ export const OceanMap: React.FC<OceanMapProps> = ({
   const handleInspectArgoFloat = async (flt: ArgoProfileItem) => {
     setSelectedFloat(flt);
     try {
-      const res = await fetch(`http://localhost:8001/api/ocean/profiles/${flt.profile_id}`);
+      const res = await fetch(`${API_BASE_URL}/api/ocean/profiles/${flt.profile_id}`);
       if (res.ok) {
         const fullProfile = await res.json();
         if (onSelectCustomProfile) {

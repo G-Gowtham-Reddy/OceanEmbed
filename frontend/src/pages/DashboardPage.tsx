@@ -15,6 +15,7 @@ import { OceanMap } from '../components/OceanMap';
 import { DepthTemperatureChart } from '../components/DepthTemperatureChart';
 import { ThreeDOceanModel } from '../components/ThreeDOceanModel';
 import { OceanApiResponse, RegionInfo } from '../types';
+import { API_BASE_URL } from '../config/api';
 
 export const DashboardPage: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('equatorial-indian');
@@ -29,7 +30,7 @@ export const DashboardPage: React.FC = () => {
 
   // Fetch available regions on mount
   useEffect(() => {
-    fetch('http://localhost:8001/api/ocean/regions')
+    fetch(`${API_BASE_URL}/api/ocean/regions`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load regions');
         return res.json();
@@ -91,7 +92,7 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const url = `http://localhost:8001/api/ocean/temperature?region=${encodeURIComponent(
+    const url = `${API_BASE_URL}/api/ocean/temperature?region=${encodeURIComponent(
       selectedRegion
     )}&date=${encodeURIComponent(date)}&max_depth=${depth}`;
 
@@ -187,7 +188,7 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <span className="flex items-center gap-1.5 text-zinc-400">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Backend Synced (:8001)</span>
+              <span>Backend Synced</span>
             </span>
           )}
         </div>
@@ -343,7 +344,7 @@ export const DashboardPage: React.FC = () => {
           <span>
             Connected to OceanEmbed Core Backend at{' '}
             <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-zinc-300">
-              http://localhost:8001
+              {API_BASE_URL}
             </code>
           </span>
         </div>

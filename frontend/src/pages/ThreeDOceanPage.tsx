@@ -8,14 +8,13 @@ import {
   MapPin,
   RefreshCw,
   Sliders,
-  Sparkles,
   Compass,
-  Box,
 } from 'lucide-react';
 import { OceanMap } from '../components/OceanMap';
 import { DepthTemperatureChart } from '../components/DepthTemperatureChart';
 import { ThreeDOceanModel } from '../components/ThreeDOceanModel';
 import { OceanApiResponse, RegionInfo } from '../types';
+import { API_BASE_URL } from '../config/api';
 
 export const ThreeDOceanPage: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('equatorial-indian');
@@ -29,7 +28,7 @@ export const ThreeDOceanPage: React.FC = () => {
 
   // Fetch available ocean regions on mount
   useEffect(() => {
-    fetch('http://localhost:8001/api/ocean/regions')
+    fetch(`${API_BASE_URL}/api/ocean/regions`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load regions');
         return res.json();
@@ -90,7 +89,7 @@ export const ThreeDOceanPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const url = `http://localhost:8001/api/ocean/temperature?region=${encodeURIComponent(
+    const url = `${API_BASE_URL}/api/ocean/temperature?region=${encodeURIComponent(
       selectedRegion
     )}&date=${encodeURIComponent(date)}&max_depth=${depth}`;
 
