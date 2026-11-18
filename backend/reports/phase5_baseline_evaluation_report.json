@@ -1,0 +1,127 @@
+{
+  "project": "OceanEmbed (SIH26066)",
+  "phase": "Phase 5 - Feature Engineering & Baseline Model Training",
+  "timestamp": "2026-11-12T15:43:01.618690",
+  "dataset": {
+    "source": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\data\\processed\\collocated_ocean_profiles.parquet",
+    "total_profiles": 75,
+    "total_columns": 69,
+    "input_features": [
+      "sat_sst",
+      "sat_sla",
+      "sat_current_u",
+      "sat_current_v",
+      "sat_current_speed",
+      "latitude",
+      "longitude",
+      "sin_doy",
+      "cos_doy",
+      "sin_month",
+      "cos_month"
+    ],
+    "evaluated_depth_targets": [
+      "temp_depth_0m",
+      "temp_depth_5m",
+      "temp_depth_10m",
+      "temp_depth_20m",
+      "temp_depth_30m",
+      "temp_depth_50m",
+      "temp_depth_75m",
+      "temp_depth_100m",
+      "temp_depth_125m",
+      "temp_depth_150m",
+      "temp_depth_200m",
+      "temp_depth_250m",
+      "temp_depth_300m",
+      "temp_depth_400m",
+      "temp_depth_500m",
+      "temp_depth_600m",
+      "temp_depth_750m",
+      "temp_depth_1000m",
+      "temp_depth_1250m",
+      "temp_depth_1500m"
+    ],
+    "excluded_targets": [
+      "temp_depth_2000m"
+    ]
+  },
+  "cross_validation": {
+    "strategy": "GroupKFold (n_splits=5)",
+    "group_key": "split_group_wmo",
+    "float_groups": [
+      "wmo_1902669",
+      "wmo_1902670",
+      "wmo_1902671",
+      "wmo_1902672",
+      "wmo_1902673",
+      "wmo_2902264",
+      "wmo_2902265",
+      "wmo_2902267",
+      "wmo_2902268",
+      "wmo_2902278",
+      "wmo_2902279",
+      "wmo_2902280",
+      "wmo_2902283"
+    ],
+    "data_leakage": "ZERO_FLOAT_OVERLAP"
+  },
+  "model_comparison": [
+    {
+      "Model": "ExtraTrees",
+      "Mean_R2": 0.7318450000000001,
+      "Std_R2": 0.2521123673348015,
+      "Mean_RMSE": 0.658955,
+      "Mean_MAE": 0.49121,
+      "Min_R2": 0.2127,
+      "Max_R2": 0.9564
+    },
+    {
+      "Model": "RandomForest",
+      "Mean_R2": 0.71752,
+      "Std_R2": 0.2588642777900988,
+      "Mean_RMSE": 0.675705,
+      "Mean_MAE": 0.506395,
+      "Min_R2": 0.258,
+      "Max_R2": 0.9594
+    },
+    {
+      "Model": "GradientBoosting",
+      "Mean_R2": 0.71449,
+      "Std_R2": 0.26749481431274613,
+      "Mean_RMSE": 0.67778,
+      "Mean_MAE": 0.50744,
+      "Min_R2": 0.2178,
+      "Max_R2": 0.9622
+    },
+    {
+      "Model": "LinearRegression",
+      "Mean_R2": 0.679385,
+      "Std_R2": 0.27028214746231777,
+      "Mean_RMSE": 0.726635,
+      "Mean_MAE": 0.5466249999999999,
+      "Min_R2": -0.0348,
+      "Max_R2": 0.9441
+    },
+    {
+      "Model": "SVR",
+      "Mean_R2": 0.5700649999999999,
+      "Std_R2": 0.1843469477143002,
+      "Mean_RMSE": 0.8534599999999999,
+      "Mean_MAE": 0.635145,
+      "Min_R2": 0.2716,
+      "Max_R2": 0.7945
+    }
+  ],
+  "top_performing_architecture": {
+    "model": "ExtraTrees",
+    "mean_r2": 0.7318450000000001,
+    "mean_rmse_degC": 0.658955,
+    "mean_mae_degC": 0.49121
+  },
+  "persisted_artifacts": {
+    "metrics_csv": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\phase5_baseline_model_metrics.csv",
+    "models_directory": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\models",
+    "depth_evaluation_chart": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\figures\\phase5_baseline_depth_evaluation.png",
+    "parity_scatter_chart": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\figures\\phase5_best_model_parity_scatter.png"
+  }
+}

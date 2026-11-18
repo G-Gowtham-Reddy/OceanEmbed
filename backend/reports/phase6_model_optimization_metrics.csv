@@ -1,0 +1,21 @@
+Depth (m),P5_Best_Model,P5_R2,P5_RMSE,P5_MAE,P6_Best_Model,P6_R2,P6_RMSE,P6_MAE,R2_Delta,RMSE_Improvement (°C)
+0,LinearRegression,0.9311,0.2921,0.2282,Voting_Ensemble,0.8424,0.4417,0.3124,-0.0887,-0.1496
+5,LinearRegression,0.9441,0.2642,0.2139,Voting_Ensemble,0.86,0.4183,0.2912,-0.0841,-0.1541
+10,LinearRegression,0.9353,0.2902,0.2383,Voting_Ensemble,0.8671,0.4158,0.2927,-0.0682,-0.1256
+20,LinearRegression,0.8469,0.4753,0.3512,Voting_Ensemble,0.8248,0.5085,0.3375,-0.0221,-0.0332
+30,RandomForest,0.7091,0.6824,0.4619,Voting_Ensemble,0.6993,0.6938,0.4435,-0.0098,-0.0114
+50,ExtraTrees,0.4469,1.1731,0.9421,Tuned_RandomForest,0.4401,1.1803,0.9429,-0.0068,-0.0072
+75,SVR,0.3167,1.6071,1.1449,Tuned_RandomForest,0.3191,1.6041,1.1752,0.0024,0.003
+100,LinearRegression,0.329,1.5027,1.1794,Voting_Ensemble,0.3351,1.4959,1.1236,0.0061,0.0068
+125,LinearRegression,0.4757,1.2111,0.9716,Voting_Ensemble,0.3984,1.2973,0.9916,-0.0773,-0.0862
+150,LinearRegression,0.5403,1.1347,0.8907,Voting_Ensemble,0.491,1.194,0.9323,-0.0493,-0.0593
+200,ExtraTrees,0.7067,0.8695,0.6615,Voting_Ensemble,0.6841,0.9024,0.6856,-0.0226,-0.0329
+250,ExtraTrees,0.805,0.6569,0.4696,Voting_Ensemble,0.8016,0.6627,0.4849,-0.0034,-0.0058
+300,ExtraTrees,0.9017,0.4225,0.3109,Voting_Ensemble,0.8909,0.4453,0.3307,-0.0108,-0.0228
+400,GradientBoosting,0.9487,0.2761,0.2061,Voting_Ensemble,0.9454,0.2847,0.2196,-0.0033,-0.0086
+500,GradientBoosting,0.9571,0.2435,0.1861,Tuned_RandomForest,0.9559,0.2467,0.1894,-0.0012,-0.0032
+600,GradientBoosting,0.951,0.2585,0.1915,Tuned_RandomForest,0.9543,0.2495,0.194,0.0033,0.009
+750,GradientBoosting,0.9622,0.2141,0.1724,Tuned_RandomForest,0.9563,0.2301,0.1838,-0.0059,-0.016
+1000,ExtraTrees,0.9388,0.2201,0.1585,Voting_Ensemble,0.9387,0.2204,0.1687,-0.0001,-0.0003
+1250,ExtraTrees,0.9246,0.1782,0.1319,Tuned_ExtraTrees,0.9227,0.1806,0.1419,-0.0019,-0.0024
+1500,ExtraTrees,0.8249,0.1733,0.1391,Tuned_ExtraTrees,0.8276,0.1719,0.1423,0.0027,0.0014

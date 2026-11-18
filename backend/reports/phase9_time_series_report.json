@@ -1,0 +1,71 @@
+{
+    "project": "OceanEmbed",
+    "phase": "Phase 9 - Time-Series Analysis & Seasonal Temperature Dynamics",
+    "dataset": {
+        "collocated_profiles_count": 75,
+        "unique_argo_floats": 13,
+        "temporal_range": {
+            "start_date": "2019-10-23",
+            "end_date": "2025-07-21",
+            "years_sampled": [
+                2019,
+                2020,
+                2021,
+                2023,
+                2024,
+                2025
+            ],
+            "missing_years": [
+                2022
+            ],
+            "temporal_sparsity_note": "Collocated dataset consists of episodic Argo-satellite match campaigns rather than an uninterrupted daily mooring time-series."
+        },
+        "basin_distribution": {
+            "Bay_of_Bengal": 46,
+            "Arabian_Sea": 29
+        },
+        "seasonal_framework": "Monsoonal Oceanographic Seasons (DJF, MAM, JJAS, ON)"
+    },
+    "seasonal_findings": {
+        "surface_mixed_layer_10m": {
+            "warmest_season_bay_of_bengal": "Spring_Pre_Monsoon (MAM) (Mean ~30.1\u00b0C)",
+            "coolest_season_arabian_sea": "Summer_SW_Monsoon (JJAS) (Mean ~28.1\u00b0C due to upwelling & evaporative wind latent heat loss)",
+            "basin_contrast": "Bay of Bengal maintains a warmer, more freshwater-stratified surface layer year-round relative to the saline Arabian Sea."
+        },
+        "thermocline_dynamics_100m": {
+            "peak_variance_season": "Summer_SW_Monsoon (JJAS)",
+            "maximum_anomaly_range_c": "\u00b14.5\u00b0C",
+            "physical_drivers": "Intense wind-driven Ekman pumping, coastal upwelling, and mesoscale eddy downwelling induce massive vertical isotherm heave."
+        },
+        "deep_ocean_500m": {
+            "seasonal_stability": "High (<0.15\u00b0C seasonal variation across all seasons)",
+            "basin_contrast": "Arabian Sea is consistently ~1.5\u00b0C warmer at 500m due to high-salinity Red Sea Outflow Water (RSOW) and Persian Gulf Water (PGW) intermediate intrusions."
+        }
+    },
+    "anomalies_detected": {
+        "total_extreme_instances": 50,
+        "max_positive_anomaly": {
+            "depth_m": 75,
+            "anomaly_c": 4.489000000000001,
+            "date": "2025-07-17",
+            "float": 1902671,
+            "mechanism": "Downwelling anticyclonic mesoscale eddy in the central Arabian Sea."
+        },
+        "max_negative_anomaly": {
+            "depth_m": 100,
+            "anomaly_c": -4.117500000000003,
+            "date": "2023-11-15",
+            "float": 1902670,
+            "mechanism": "Post-monsoon cyclonic eddy upwelling in the Bay of Bengal."
+        }
+    },
+    "scientific_limitations": [
+        "Sparsity of collocated historical profiles (75 profiles across 13 floats with multi-month gaps and no 2022 coverage) precludes fitting secular multi-decadal climate warming trends.",
+        "Float trajectories drift with intermediate currents (1000 dbar), meaning observed temporal changes combine Lagrangian spatial displacement with Eulerian temporal changes.",
+        "Discrete sampling does not capture high-frequency diurnal or synoptic storm-induced inertial oscillations."
+    ],
+    "phase_status": {
+        "phase_9_completed": true,
+        "phase_10_started": false
+    }
+}

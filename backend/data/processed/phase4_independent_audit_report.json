@@ -1,0 +1,48 @@
+{
+  "project": "OceanEmbed (SIH26066)",
+  "task": "Phase 4 Final Independent Audit",
+  "timestamp": "2026-11-12T15:34:42.921353",
+  "audit_status": "PASSED_100_PERCENT",
+  "raw_inventory": {
+    "argo_float_files_count": 13,
+    "satellite_netcdf_files_count": 21,
+    "satellite_suites_count": 7,
+    "all_files_exist_and_verified": true
+  },
+  "processed_dataset": {
+    "csv_path": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\data\\processed\\collocated_ocean_profiles.csv",
+    "parquet_path": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\data\\processed\\collocated_ocean_profiles.parquet",
+    "rows": 75,
+    "columns": 65,
+    "unique_profiles": 75,
+    "duplicate_count": 0,
+    "unique_physical_floats": 13,
+    "parity_max_difference": 0.0
+  },
+  "temporal_match_tiers": {
+    "tier0_exact_0d": 23,
+    "tier1_synoptic_0to1d": 12,
+    "tier2_standard_1to3d": 19,
+    "tier3_mesoscale_3to5d": 21,
+    "mutually_exclusive": true
+  },
+  "satellite_epoch_distribution": {
+    "Epoch_2_Jul2020": 17,
+    "Epoch_1_Oct2019": 16,
+    "Epoch_3_Mar2021": 16,
+    "Epoch_6_May2024": 8,
+    "Epoch_7_Jul2025": 8,
+    "Epoch_4_Nov2023": 5,
+    "Epoch_5_Jan2024": 5
+  },
+  "basin_distribution": {
+    "Bay_of_Bengal": 46,
+    "Arabian_Sea": 29
+  },
+  "leakage_audit": {
+    "method": "GroupKFold (n_splits=5)",
+    "group_key": "split_group_wmo",
+    "overlap_across_all_folds": 0,
+    "zero_leakage_verified": true
+  }
+}

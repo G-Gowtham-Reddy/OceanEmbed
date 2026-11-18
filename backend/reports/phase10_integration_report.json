@@ -1,0 +1,91 @@
+{
+    "project": "OceanEmbed",
+    "phase": "Phase 10 - Backend Integration & Frontend Connection",
+    "status": "COMPLETED",
+    "backend": {
+        "framework": "FastAPI",
+        "port": 8001,
+        "entrypoint": "backend/main.py",
+        "models_served": {
+            "count": 20,
+            "depth_range_m": [
+                0,
+                1500
+            ],
+            "excluded_depth_m": 2000,
+            "architecture_types": [
+                "Voting_Ensemble",
+                "Tuned_RandomForest",
+                "Tuned_ExtraTrees"
+            ]
+        },
+        "endpoints": [
+            {
+                "path": "/api/health",
+                "method": "GET",
+                "purpose": "System health and model inventory"
+            },
+            {
+                "path": "/api/ocean/regions",
+                "method": "GET",
+                "purpose": "North Indian Ocean monitored basins"
+            },
+            {
+                "path": "/api/ocean/temperature",
+                "method": "GET",
+                "purpose": "Genuine depth soundings & basin profiles"
+            },
+            {
+                "path": "/api/ocean/profiles",
+                "method": "GET",
+                "purpose": "Catalog of 75 genuine collocated Argo profiles"
+            },
+            {
+                "path": "/api/ocean/profiles/{id}",
+                "method": "GET",
+                "purpose": "Detailed in-situ vs model sounding comparisons"
+            },
+            {
+                "path": "/api/predict",
+                "method": "POST",
+                "purpose": "Live multi-depth subsurface temperature inference"
+            },
+            {
+                "path": "/api/model/metrics",
+                "method": "GET",
+                "purpose": "Phase 6 vs Phase 5 validation benchmarks"
+            }
+        ]
+    },
+    "frontend": {
+        "framework": "React 18 + TypeScript + Vite",
+        "port": 5173,
+        "backend_target": "http://localhost:8001",
+        "pages_integrated": [
+            {
+                "name": "DashboardPage",
+                "features": "Interactive map, real basin profiles (0-1500m), real KPIs"
+            },
+            {
+                "name": "PredictionPage",
+                "features": "Interactive Inference Studio with custom inputs and genuine Argo presets"
+            },
+            {
+                "name": "ModelAnalysisPage",
+                "features": "Dynamic benchmarks table, depth error bar charts, SHAP attribution insights"
+            },
+            {
+                "name": "AboutProjectPage",
+                "features": "Project objectives, research standards, and operational data sources"
+            }
+        ],
+        "build_status": "tsc -b && vite build passed with zero errors"
+    },
+    "preservation_compliance": {
+        "phase1_to_9_preserved": true,
+        "raw_netcdfs_preserved": true,
+        "zero_synthetic_inference": true,
+        "ml_operations_in_notebooks_only": true,
+        "deployment_deferred": true
+    }
+}

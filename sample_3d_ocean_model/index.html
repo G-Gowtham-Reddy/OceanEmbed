@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OceanEmbed - 3D Subsurface Temperature Reconstruction</title>
+  <!-- Three.js + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background-color: #030712;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Cinematic Deep Space Ambient Gradient */
+    .bg-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 42%, rgba(14, 165, 233, 0.08) 0%, rgba(3, 7, 18, 0.98) 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HUD Layer */
+    .hud-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 36px;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .brand-title {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #38bdf8;
+      font-weight: 700;
+      margin-bottom: 3px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    }
+    .main-heading {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 4px;
+      background: rgba(14, 165, 233, 0.18);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+      letter-spacing: 1px;
+    }
+
+    .controls-panel {
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    .ctrl-btn {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.85);
+      color: #cbd5e1;
+      padding: 8px 15px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      letter-spacing: 0.5px;
+    }
+    .ctrl-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+    }
+    .ctrl-btn.active {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Left Side Oceanographic Strata Callouts */
+    .strata-callouts {
+      position: absolute;
+      top: 140px;
+      left: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+      pointer-events: none;
+    }
+    .strata-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      position: relative;
+      padding-left: 14px;
+    }
+    .strata-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2.5px;
+      border-radius: 2px;
+    }
+    .strata-item.surface::before { background: #ea580c; box-shadow: 0 0 8px rgba(234, 88, 12, 0.8); }
+    .strata-item.thermocline::before { background: #fbbf24; box-shadow: 0 0 8px rgba(251, 191, 36, 0.8); }
+    .strata-item.deep::before { background: #0284c7; box-shadow: 0 0 8px rgba(2, 132, 199, 0.8); }
+    .strata-item.abyssal::before { background: #1e3a8a; box-shadow: 0 0 8px rgba(30, 58, 138, 0.8); }
+
+    .strata-name {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+      color: #ffffff;
+    }
+    .strata-range {
+      font-size: 9.5px;
+      color: #94a3b8;
+      font-family: monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* Right Side Vertical Temperature Colorbar */
+    .colorbar-panel {
+      position: absolute;
+      top: 130px;
+      right: 36px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(51, 65, 85, 0.7);
+      padding: 16px 18px;
+      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    }
+    .colorbar-gradient {
+      width: 14px;
+      height: 300px;
+      border-radius: 7px;
+      background: linear-gradient(to bottom, 
+        #ea580c 0%, 
+        #f59e0b 16%, 
+        #fbbf24 32%, 
+        #059669 46%, 
+        #0284c7 64%, 
+        #1e3a8a 82%, 
+        #030712 100%);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+    }
+    .colorbar-ticks {
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+    .colorbar-ticks span {
+      position: relative;
+    }
+    .colorbar-ticks span::before {
+      content: "—";
+      position: absolute;
+      left: -14px;
+      color: #64748b;
+    }
+
+    /* Footer Bar */
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .footer-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .horizontal-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
+      font-size: 10px;
+      color: #94a3b8;
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .legend-bar-mini {
+      width: 80px;
+      height: 5px;
+      border-radius: 3px;
+      background: linear-gradient(to right, #ea580c, #fbbf24, #059669, #0284c7, #1e3a8a, #030712);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+    .footer-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 1.2px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    }
+
+    .scale-compass-block {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+    }
+    .scale-widget {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .scale-label {
+      font-size: 8px;
+      color: #64748b;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .scale-bar {
+      width: 110px;
+      height: 3px;
+      background: #475569;
+      position: relative;
+    }
+    .scale-bar::before, .scale-bar::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      width: 2px;
+      height: 8px;
+      background: #475569;
+    }
+    .scale-bar::before { left: 0; }
+    .scale-bar::after { right: 0; }
+    .scale-ticks {
+      width: 110px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #64748b;
+      font-family: monospace;
+    }
+    .compass-rose {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: monospace;
+      font-size: 10px;
+      font-weight: 800;
+      color: #38bdf8;
+      gap: 2px;
+    }
+    .compass-needle {
+      width: 2px;
+      height: 20px;
+      background: linear-gradient(to bottom, #38bdf8 50%, #475569 50%);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+    }
+
+    .interaction-hint {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      padding: 6px 18px;
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div id="canvas-container"></div>
+
+  <!-- HUD Layer -->
+  <div class="hud-layer">
+    <div class="header-bar">
+      <div>
+        <div class="brand-title">OceanEmbed Scientific Reconstruction</div>
+        <div class="main-heading">
+          3D Subsurface Temperature Reconstruction
+          <span class="badge">PHYSICALLY REALISTIC 3D</span>
+        </div>
+      </div>
+      <div class="controls-panel">
+        <button class="ctrl-btn" id="btn-rotate">Auto-Rotate</button>
+        <button class="ctrl-btn active" id="btn-wireframe">Bounding Outline</button>
+        <button class="ctrl-btn" id="btn-reset">Reset View</button>
+      </div>
+    </div>
+
+    <!-- Strata Callouts on Left -->
+    <div class="strata-callouts">
+      <div class="strata-item surface">
+        <span class="strata-name">SURFACE MIXED LAYER</span>
+        <span class="strata-range">(0-150m)</span>
+      </div>
+      <div class="strata-item thermocline">
+        <span class="strata-name">THERMOCLINE</span>
+        <span class="strata-range">(150-700m)</span>
+      </div>
+      <div class="strata-item deep">
+        <span class="strata-name">DEEP WATER</span>
+        <span class="strata-range">(700-1500m)</span>
+      </div>
+      <div class="strata-item abyssal">
+        <span class="strata-name">ABYSSAL WATER</span>
+        <span class="strata-range">(&gt;1500m)</span>
+      </div>
+    </div>
+
+    <!-- Vertical Temperature Colorbar on Right -->
+    <div class="colorbar-panel">
+      <div class="colorbar-gradient"></div>
+      <div class="colorbar-ticks">
+        <span>24°C</span>
+        <span>18°C</span>
+        <span>14°C</span>
+        <span>8°C</span>
+        <span>3°C</span>
+      </div>
+    </div>
+
+    <!-- Footer Bar -->
+    <div class="footer-bar">
+      <div class="footer-title-block">
+        <div class="horizontal-legend">
+          <span>24°C Warm</span>
+          <div class="legend-bar-mini"></div>
+          <span>2°C Cold</span>
+        </div>
+        <div class="footer-title">SUBSURFACE TEMPERATURE RECONSTRUCTION</div>
+      </div>
+
+      <div class="scale-compass-block">
+        <div class="scale-widget">
+          <span class="scale-label">SCALE</span>
+          <div class="scale-bar"></div>
+          <div class="scale-ticks">
+            <span>0</span>
+            <span>500</span>
+            <span>2000</span>
+          </div>
+        </div>
+        <div class="compass-rose">
+          <span>N</span>
+          <div class="compass-needle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="interaction-hint">
+    Left Click & Drag to Orbit 360° • Scroll to Zoom • Right Click to Pan
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. SCENE SETUP & CINEMATIC ISOMETRIC CAMERA
+    // =========================================================================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 300);
+    camera.position.set(24, 18, 24);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+    renderer.shadowMap.enabled = false;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.02;
+    controls.minDistance = 12;
+    controls.maxDistance = 60;
+    controls.target.set(0, -0.5, 0);
+
+    // Natural Sunlight & Optical Illumination
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambientLight);
+
+    // Primary High Sun (Creates radiant specular glints on water waves)
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1.55);
+    sunLight.position.set(20, 36, 20);
+    scene.add(sunLight);
+
+    // Soft Cyan Backfill (Reflects deep-sea scattering)
+    const cyanRimLight = new THREE.DirectionalLight(0x38bdf8, 1.15);
+    cyanRimLight.position.set(-25, 18, -25);
+    scene.add(cyanRimLight);
+
+    // Secondary Warm Keylight
+    const warmLight = new THREE.DirectionalLight(0xf59e0b, 0.4);
+    warmLight.position.set(30, 10, -10);
+    scene.add(warmLight);
+
+    // =========================================================================
+    // 2. PROCEDURAL TEXTURES: FLUID DYNAMICS & WATER CAUSTICS
+    // =========================================================================
+
+    // PILLAR 2: Hydrodynamic Gradient with Natural Kelvin-Helmholtz Shear Waves
+    function createHydrodynamicGradientTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 2048;
+      canvas.height = 2048;
+      const ctx = canvas.getContext('2d');
+
+      // 1. Natural Oceanographic Multi-Stop Thermal Stratification Gradient
+      const grad = ctx.createLinearGradient(0, 0, 0, 2048);
+      grad.addColorStop(0.00, '#c2410c'); // 24°C Surface warm coral red-orange
+      grad.addColorStop(0.04, '#ea580c'); // 23°C Warm mixed layer
+      grad.addColorStop(0.09, '#f97316'); // 21°C
+      grad.addColorStop(0.18, '#f59e0b'); // 19°C Golden amber
+      grad.addColorStop(0.28, '#fbbf24'); // 17°C Warm golden core
+      grad.addColorStop(0.38, '#d97706'); // 15°C Thermocline core
+      grad.addColorStop(0.46, '#059669'); // 12°C Emerald-teal transition
+      grad.addColorStop(0.56, '#0891b2'); // 10°C Marine cyan
+      grad.addColorStop(0.68, '#0284c7'); // 8°C Deep ocean cyan
+      grad.addColorStop(0.80, '#1d4ed8'); // 5°C Royal navy blue
+      grad.addColorStop(0.92, '#1e3a8a'); // 3°C Abyssal indigo
+      grad.addColorStop(1.00, '#030712'); // 2°C Midnight abyss
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 2048, 2048);
+
+      // 2. Natural Kelvin-Helmholtz Shear Wave Trains (Fluid Dynamics Rollup)
+      ctx.save();
+      const numBillows = 5;
+      for (let b = 0; b < numBillows; b++) {
+        const billowX = 220 + b * 400;
+        const billowY = 620 + Math.sin(b * 1.2) * 30;
+        const billowRad = 110;
+
+        // Subtle fluid curl
+        const swirlGrad = ctx.createRadialGradient(billowX, billowY, 10, billowX, billowY, billowRad);
+        swirlGrad.addColorStop(0, 'rgba(254, 240, 138, 0.28)');
+        swirlGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.15)');
+        swirlGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = swirlGrad;
+        ctx.beginPath();
+        ctx.arc(billowX, billowY, billowRad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. Fluid Streamlines & Density Micro-Isotherms (Smooth horizontal stratification)
+      for (let i = 0; i < 42; i++) {
+        const baseY = 300 + i * 26;
+        ctx.beginPath();
+        if (i < 18) {
+          ctx.strokeStyle = `rgba(254, 240, 138, ${0.22 - (i / 18) * 0.1})`;
+          ctx.lineWidth = 3.5;
+        } else if (i < 28) {
+          ctx.strokeStyle = `rgba(16, 185, 129, ${0.18 - ((i - 18) / 10) * 0.08})`;
+          ctx.lineWidth = 3.0;
+        } else {
+          ctx.strokeStyle = `rgba(56, 189, 248, ${0.15 - ((i - 28) / 14) * 0.08})`;
+          ctx.lineWidth = 2.5;
+        }
+
+        for (let x = 0; x <= 2048; x += 16) {
+          // Hydrodynamic wave equation with dispersion
+          const wave1 = Math.sin(x * 0.006 + i * 0.35) * 24;
+          const wave2 = Math.cos(x * 0.014 - i * 0.2) * 12;
+          const wave3 = Math.sin(x * 0.035 + i * 0.6) * 4;
+          const y = baseY + wave1 + wave2 + wave3;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.ClampToEdgeWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      return tex;
+    }
+
+    // PILLAR 1: Realistic Water Surface Texture with Sunlight Caustics & Dynamic Specular Sheen
+    function createRealisticWaterCausticsTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 1024;
+      const ctx = canvas.getContext('2d');
+
+      // Radiant deep turquoise-blue ocean base
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Deep sunlit sheen
+      const rad = ctx.createRadialGradient(512, 512, 50, 512, 512, 512);
+      rad.addColorStop(0, '#7dd3fc');
+      rad.addColorStop(0.35, '#38bdf8');
+      rad.addColorStop(0.75, '#0284c7');
+      rad.addColorStop(1, '#0369a1');
+      ctx.fillStyle = rad;
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Organic caustics refraction webbing
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.42)';
+      ctx.lineWidth = 2.2;
+      for (let i = 0; i < 38; i++) {
+        ctx.beginPath();
+        for (let x = 0; x <= 1024; x += 20) {
+          const y = (i * 28) + Math.sin(x * 0.032 + i * 0.7) * 12 + Math.cos(x * 0.018 - i * 0.4) * 7;
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    // =========================================================================
+    // 3. 3D OCEAN VOLUME & TRANSLUCENT OPTICS
+    // =========================================================================
+    const oceanGroup = new THREE.Group();
+    scene.add(oceanGroup);
+
+    const BLOCK_W = 12.0;
+    const BLOCK_H = 12.0;
+    const BLOCK_D = 12.0;
+
+    const strataTex = createHydrodynamicGradientTexture();
+    const waterTex = createRealisticWaterCausticsTexture();
+
+    // Cross-Section Material: Translucent Water Walls showing internal 3D marine features
+    const cutawaySideMat = new THREE.MeshStandardMaterial({
+      map: strataTex,
+      roughness: 0.18,
+      metalness: 0.06,
+      transparent: true,
+      opacity: 0.78,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+
+    const deepOceanMat = new THREE.MeshStandardMaterial({
+      color: 0x030712,
+      roughness: 0.6,
+      metalness: 0.1
+    });
+
+    // Front-Left Face (+Z face, facing camera-left)
+    const frontLeftPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(BLOCK_W, BLOCK_H),
+      cutawaySideMat
+    );
+    frontLeftPlane.position.set(0, 0, BLOCK_D / 2);
+    frontLeftPlane.renderOrder = 20;
+    oceanGroup.add(frontLeftPlane);
+
+    // Front-Right Face (+X face, facing camera-right)
+    const frontRightPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(BLOCK_D, BLOCK_H),
+      cutawaySideMat
+    );
+    frontRightPlane.rotateY(Math.PI / 2);
+    frontRightPlane.position.set(BLOCK_W / 2, 0, 0);
+    frontRightPlane.renderOrder = 20;
+    oceanGroup.add(frontRightPlane);
+
+    // Back-Left Face (-X face, now with full thermal stratification water)
+    const backLeftPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(BLOCK_D, BLOCK_H),
+      cutawaySideMat
+    );
+    backLeftPlane.rotateY(-Math.PI / 2);
+    backLeftPlane.position.set(-BLOCK_W / 2, 0, 0);
+    backLeftPlane.renderOrder = 20;
+    oceanGroup.add(backLeftPlane);
+
+    // Back-Right Face (-Z face, now with full thermal stratification water)
+    const backRightPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(BLOCK_W, BLOCK_H),
+      cutawaySideMat
+    );
+    backRightPlane.rotateY(Math.PI);
+    backRightPlane.position.set(0, 0, -BLOCK_D / 2);
+    backRightPlane.renderOrder = 20;
+    oceanGroup.add(backRightPlane);
+
+    // PILLAR 1: Translucent Refractive Water Surface with Sun Glints
+    const waveGeom = new THREE.PlaneGeometry(BLOCK_W, BLOCK_D, 72, 72);
+    waveGeom.rotateX(-Math.PI / 2);
+    const wavePos = waveGeom.attributes.position;
+    const waveOrigY = new Float32Array(wavePos.count);
+    for (let i = 0; i < wavePos.count; i++) {
+      waveOrigY[i] = wavePos.getY(i);
+    }
+
+    // High specular shininess (160) creates sparkling sun glints across wave crests
+    const waveMat = new THREE.MeshPhongMaterial({
+      map: waterTex,
+      color: 0x38bdf8,
+      specular: 0xffffff,
+      shininess: 160,
+      transparent: true,
+      opacity: 0.92,
+      side: THREE.DoubleSide
+    });
+    const waveMesh = new THREE.Mesh(waveGeom, waveMat);
+    waveMesh.position.set(0, BLOCK_H / 2, 0);
+    oceanGroup.add(waveMesh);
+
+    // Subtle internal sun caustic light pool just under the surface
+    const causticGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(BLOCK_W - 0.2, BLOCK_D - 0.2),
+      new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.12,
+        side: THREE.DoubleSide
+      })
+    );
+    causticGlow.rotateX(-Math.PI / 2);
+    causticGlow.position.set(0, BLOCK_H / 2 - 0.15, 0);
+    oceanGroup.add(causticGlow);
+
+    // Scientific Bounding Outline
+    const boxGeom = new THREE.BoxGeometry(BLOCK_W, BLOCK_H, BLOCK_D);
+    const cageEdges = new THREE.EdgesGeometry(boxGeom);
+    const cageMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 });
+    const cageLine = new THREE.LineSegments(cageEdges, cageMat);
+    cageLine.position.set(0, 0, 0);
+    oceanGroup.add(cageLine);
+
+    // =========================================================================
+    // 4. PILLAR 3: MICRO-DETAILED ARGO FLOAT & ORGANIC BOBBING MOTION
+    // =========================================================================
+    // Root group positioned at the corner (X = 6.0, Z = 6.0)
+    const argoGroup = new THREE.Group();
+    const ARGO_X = 6.0;
+    const ARGO_Z = 6.0;
+    const FLOAT_SURFACE_Y = 6.0;
+    oceanGroup.add(argoGroup);
+
+    // Float Bobbing Subgroup (Transforms dynamically in animate() with pitch, roll & heave)
+    const floatBobGroup = new THREE.Group();
+    floatBobGroup.position.set(ARGO_X, FLOAT_SURFACE_Y, ARGO_Z);
+    argoGroup.add(floatBobGroup);
+
+    const FLOAT_SCALE = 0.85;
+
+    // 1. High-Detail Yellow Cylindrical Pressure Hull (APEX/Provor Spec)
+    const hullGeom = new THREE.CylinderGeometry(0.24 * FLOAT_SCALE, 0.24 * FLOAT_SCALE, 1.25 * FLOAT_SCALE, 32);
+    const hullMat = new THREE.MeshStandardMaterial({
+      color: 0xfacc15,
+      roughness: 0.25,
+      metalness: 0.35,
+      emissive: 0xca8a04,
+      emissiveIntensity: 0.5
+    });
+    const hullMesh = new THREE.Mesh(hullGeom, hullMat);
+    hullMesh.position.set(0, -0.32 * FLOAT_SCALE, 0);
+    floatBobGroup.add(hullMesh);
+
+    // Black Reinforcement Rings & Securing Clamps
+    const collarMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.75 });
+    [-0.55, 0.05].forEach(yOff => {
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.25 * FLOAT_SCALE, 0.022 * FLOAT_SCALE, 16, 32), collarMat);
+      collar.rotateX(Math.PI / 2);
+      collar.position.set(0, yOff * FLOAT_SCALE, 0);
+      floatBobGroup.add(collar);
+    });
+
+    // 2. Micro-Detailed SBE-41 CTD Sensor Head Unit (Intake, Conductivity Cell & Thermistor)
+    const ctdUnitGroup = new THREE.Group();
+    ctdUnitGroup.position.set(0, 0.38 * FLOAT_SCALE, 0);
+    floatBobGroup.add(ctdUnitGroup);
+
+    const ctdBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.18 * FLOAT_SCALE, 0.24 * FLOAT_SCALE, 0.35 * FLOAT_SCALE, 32),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.85, roughness: 0.2 })
+    );
+    ctdUnitGroup.add(ctdBody);
+
+    // Dual vertical sensor intake flow tubes
+    const tubeMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9, roughness: 0.1 });
+    [-0.06, 0.06].forEach(xOff => {
+      const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.02 * FLOAT_SCALE, 0.02 * FLOAT_SCALE, 0.18 * FLOAT_SCALE, 12), tubeMat);
+      tube.position.set(xOff * FLOAT_SCALE, 0.22 * FLOAT_SCALE, 0);
+      ctdUnitGroup.add(tube);
+    });
+
+    // 3. Communications Antenna Mast with Blinking Satellite Beacon LED
+    const antMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.015, 0.025, 1.15 * FLOAT_SCALE, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.1 })
+    );
+    antMesh.position.set(0, 1.15 * FLOAT_SCALE, 0);
+    floatBobGroup.add(antMesh);
+
+    // Antenna Radome Tip
+    const antCap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045 * FLOAT_SCALE, 16, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.95, roughness: 0.1 })
+    );
+    antCap.position.set(0, 1.72 * FLOAT_SCALE, 0);
+    floatBobGroup.add(antCap);
+
+    // Blinking Satellite Telemetry LED Light Beacon (Flashes green/amber)
+    const beaconLight = new THREE.PointLight(0x10b981, 1.5, 3.5);
+    beaconLight.position.set(0, 1.72 * FLOAT_SCALE, 0);
+    floatBobGroup.add(beaconLight);
+
+    const beaconMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.03 * FLOAT_SCALE, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0x10b981 })
+    );
+    beaconMesh.position.set(0, 1.72 * FLOAT_SCALE, 0);
+    floatBobGroup.add(beaconMesh);
+
+    // 4. Bottom Damping Disk & Buoyancy Hydraulic Bladder
+    const dampingDisk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35 * FLOAT_SCALE, 0.35 * FLOAT_SCALE, 0.06 * FLOAT_SCALE, 32),
+      new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.35, roughness: 0.25 })
+    );
+    dampingDisk.position.set(0, -0.96 * FLOAT_SCALE, 0);
+    floatBobGroup.add(dampingDisk);
+
+    const bladderMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16 * FLOAT_SCALE, 24, 24),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5, metalness: 0.5 })
+    );
+    bladderMesh.position.set(0, -1.14 * FLOAT_SCALE, 0);
+    floatBobGroup.add(bladderMesh);
+
+    // 5. Vertical Holographic Profiling Beam / 1500m Measurement Sounding Line
+    const soundingBeam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.022, 0.022, 12.0, 16),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.88 })
+    );
+    soundingBeam.position.set(ARGO_X, 0.0, ARGO_Z);
+    argoGroup.add(soundingBeam);
+
+    // Dynamic Sensor Node traversing the water column
+    const sensorNode = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0x67e8f9 })
+    );
+    sensorNode.position.set(ARGO_X, 0.0, ARGO_Z);
+    argoGroup.add(sensorNode);
+
+    // Text Sprite Helper with wide canvas to prevent any label truncation
+    function makeTextSprite(message, colorStr) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 768;
+      canvas.height = 140;
+      const ctx = canvas.getContext('2d');
+      ctx.font = 'Bold 44px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = colorStr || '#ffffff';
+      ctx.fillText(message, 384, 70);
+      const tex = new THREE.CanvasTexture(canvas);
+      const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(3.2, 0.6, 1.0);
+      return sprite;
+    }
+
+    // 4 Radiant Concentric Holographic Depth Rings: 0m, 500m, 1000m, 1500m
+    const depthLevels = [
+      { depth: '0m', y: 6.0, radius: 2.2, color: 0xffffff },
+      { depth: '500m', y: 3.2, radius: 2.5, color: 0x67e8f9 },
+      { depth: '1000m', y: 0.0, radius: 2.8, color: 0x38bdf8 },
+      { depth: '1500m', y: -3.2, radius: 3.1, color: 0x0284c7 }
+    ];
+
+    const depthRings = [];
+
+    depthLevels.forEach(lvl => {
+      const ringGeom = new THREE.TorusGeometry(lvl.radius, 0.075, 16, 64);
+      ringGeom.rotateX(Math.PI / 2);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: lvl.color,
+        transparent: true,
+        opacity: 0.95
+      });
+      const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+      ringMesh.position.set(ARGO_X, lvl.y, ARGO_Z);
+      argoGroup.add(ringMesh);
+
+      const glowDisc = new THREE.Mesh(
+        new THREE.CircleGeometry(lvl.radius, 32),
+        new THREE.MeshBasicMaterial({ color: lvl.color, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false })
+      );
+      glowDisc.rotateX(-Math.PI / 2);
+      glowDisc.position.set(ARGO_X, lvl.y, ARGO_Z);
+      argoGroup.add(glowDisc);
+
+      const label = makeTextSprite(lvl.depth, '#ffffff');
+      label.scale.set(1.5, 0.75, 1.0);
+      const angle = Math.PI / 4;
+      label.position.set(ARGO_X + Math.cos(angle) * (lvl.radius + 0.25), lvl.y + 0.25, ARGO_Z + Math.sin(angle) * (lvl.radius + 0.25));
+      argoGroup.add(label);
+
+      depthRings.push({ mesh: ringMesh, phase: lvl.y });
+    });
+
+    // Argo Float Callout Label & Leader Line
+    const floatLabel = makeTextSprite('ARGO PROFILING FLOAT (~2m)', '#facc15');
+    floatLabel.scale.set(4.8, 0.9, 1.0);
+    floatLabel.position.set(ARGO_X + 4.2, FLOAT_SURFACE_Y + 1.2, ARGO_Z - 1.6);
+    argoGroup.add(floatLabel);
+
+    const calloutLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(ARGO_X + 0.35, FLOAT_SURFACE_Y - 0.1, ARGO_Z),
+        new THREE.Vector3(ARGO_X + 2.2, FLOAT_SURFACE_Y + 1.2, ARGO_Z - 1.2)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.95 })
+    );
+    argoGroup.add(calloutLine);
+
+    // =========================================================================
+    // 5. CONTOURED BATHYMETRIC SEABED, 3D ROCKS & DEEP-SEA MARINE FLORA
+    // =========================================================================
+    const seabedGeom = new THREE.PlaneGeometry(BLOCK_W + 1.8, BLOCK_D + 1.8, 64, 64);
+    seabedGeom.rotateX(-Math.PI / 2);
+    const seabedPos = seabedGeom.attributes.position;
+    for (let i = 0; i < seabedPos.count; i++) {
+      const u = seabedPos.getX(i);
+      const v = seabedPos.getZ(i);
+      const ridge1 = Math.sin(u * 0.8) * Math.cos(v * 0.8) * 0.65;
+      const ridge2 = Math.sin(u * 2.2 + v * 1.8) * 0.22;
+      const canyon = Math.exp(-Math.pow((v - Math.sin(u * 0.5) * 2), 2) / 6) * 0.4;
+      seabedPos.setY(i, ridge1 + ridge2 - canyon - 0.2);
+    }
+    seabedGeom.computeVertexNormals();
+
+    const seabedMesh = new THREE.Mesh(
+      seabedGeom,
+      new THREE.MeshStandardMaterial({
+        color: 0x0f172a,
+        roughness: 0.85,
+        metalness: 0.25,
+        flatShading: true
+      })
+    );
+    seabedMesh.position.set(0, -BLOCK_H / 2 - 0.2, 0);
+    seabedMesh.renderOrder = 1;
+    oceanGroup.add(seabedMesh);
+
+    // 5B. Real 3D Craggy Basalt Rocks & Boulders on Seabed
+    const geologyGroup = new THREE.Group();
+    geologyGroup.renderOrder = 2;
+    oceanGroup.add(geologyGroup);
+
+    const rockMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      roughness: 0.88,
+      metalness: 0.18,
+      flatShading: true
+    });
+
+    const rockPositions = [
+      { x: 3.2, z: 2.8, sx: 1.1, sy: 0.9, sz: 1.2, rot: 0.4 },
+      { x: 1.8, z: 4.2, sx: 0.8, sy: 0.6, sz: 0.7, rot: 1.2 },
+      { x: -1.5, z: 2.2, sx: 1.3, sy: 1.0, sz: 1.1, rot: 2.1 },
+      { x: -3.5, z: 1.0, sx: 0.9, sy: 0.7, sz: 0.8, rot: 0.8 },
+      { x: 0.8, z: -2.4, sx: 1.4, sy: 1.1, sz: 1.3, rot: 1.7 },
+      { x: -2.6, z: -3.2, sx: 1.0, sy: 0.8, sz: 0.9, rot: 3.1 },
+      { x: 4.2, z: -2.0, sx: 0.85, sy: 0.7, sz: 0.95, rot: 0.9 },
+      { x: 2.5, z: -4.0, sx: 1.1, sy: 0.85, sz: 1.0, rot: 2.5 },
+      { x: -4.0, z: -1.5, sx: 0.7, sy: 0.55, sz: 0.65, rot: 1.4 },
+      { x: 4.8, z: 1.2, sx: 0.9, sy: 0.75, sz: 0.8, rot: 0.6 }
+    ];
+
+    rockPositions.forEach(rp => {
+      const rockGeo = new THREE.DodecahedronGeometry(1.0, 1);
+      const pos = rockGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const vx = pos.getX(i);
+        const vy = pos.getY(i);
+        const vz = pos.getZ(i);
+        const noise = 1.0 + (Math.sin(vx * 5.0) * Math.cos(vz * 5.0)) * 0.2;
+        pos.setXYZ(i, vx * noise, vy * noise, vz * noise);
+      }
+      rockGeo.computeVertexNormals();
+
+      const rock = new THREE.Mesh(rockGeo, rockMat);
+      rock.scale.set(rp.sx * 0.75, rp.sy * 0.75, rp.sz * 0.75);
+      rock.rotation.set(rp.rot * 0.5, rp.rot, rp.rot * 0.3);
+      rock.position.set(rp.x, -BLOCK_H / 2 + (rp.sy * 0.35) - 0.25, rp.z);
+      geologyGroup.add(rock);
+    });
+
+    // 5C. Deep-Sea Marine Flora: Swaying Ocean Kelp & Coral Plants
+    const plantsGroup = new THREE.Group();
+    plantsGroup.renderOrder = 3;
+    oceanGroup.add(plantsGroup);
+
+    const plantClusters = [
+      { x: 2.6, z: 3.6, height: 2.4, color: 0x059669, count: 5, phase: 0.2 },
+      { x: -2.2, z: 3.0, height: 2.8, color: 0x10b981, count: 6, phase: 1.5 },
+      { x: 0.2, z: -1.8, height: 3.2, color: 0x047857, count: 7, phase: 2.8 },
+      { x: -3.8, z: -2.5, height: 2.2, color: 0x0d9488, count: 5, phase: 0.9 },
+      { x: 3.8, z: -3.2, height: 2.6, color: 0x10b981, count: 6, phase: 2.1 },
+      { x: -1.0, z: -4.0, height: 2.0, color: 0x059669, count: 4, phase: 3.4 },
+      { x: 4.4, z: 2.2, height: 2.3, color: 0x0d9488, count: 5, phase: 1.1 }
+    ];
+
+    const swayingBlades = [];
+
+    plantClusters.forEach(cluster => {
+      const clusterGroup = new THREE.Group();
+      clusterGroup.position.set(cluster.x, -BLOCK_H / 2 - 0.2, cluster.z);
+      plantsGroup.add(clusterGroup);
+
+      const leafMat = new THREE.MeshStandardMaterial({
+        color: cluster.color,
+        roughness: 0.35,
+        metalness: 0.1,
+        side: THREE.DoubleSide
+      });
+
+      for (let i = 0; i < cluster.count; i++) {
+        const bladeAngle = (i / cluster.count) * Math.PI * 2;
+        const bladeLen = cluster.height * (0.8 + Math.random() * 0.4);
+
+        const bladeGeo = new THREE.PlaneGeometry(0.2, bladeLen, 1, 8);
+        bladeGeo.translate(0, bladeLen / 2, 0);
+
+        const bPos = bladeGeo.attributes.position;
+        for (let j = 0; j < bPos.count; j++) {
+          const yNorm = bPos.getY(j) / bladeLen;
+          const curve = Math.pow(yNorm, 2) * 0.28;
+          bPos.setZ(j, bPos.getZ(j) + curve);
+        }
+        bladeGeo.computeVertexNormals();
+
+        const blade = new THREE.Mesh(bladeGeo, leafMat);
+        blade.rotation.y = bladeAngle;
+        blade.rotation.x = (Math.random() - 0.5) * 0.2;
+        blade.rotation.z = (Math.random() - 0.5) * 0.2;
+        clusterGroup.add(blade);
+
+        swayingBlades.push({
+          mesh: blade,
+          baseRotZ: blade.rotation.z,
+          baseRotX: blade.rotation.x,
+          phase: cluster.phase + i * 0.4,
+          speed: 1.2 + (i % 3) * 0.2
+        });
+      }
+    });
+
+    const seabedLabel = makeTextSprite('BATHYMETRIC SEABED', '#94a3b8');
+    seabedLabel.scale.set(3.8, 0.95, 1.0);
+    seabedLabel.position.set(ARGO_X + 2.8, -BLOCK_H / 2 - 0.85, ARGO_Z - 0.8);
+    oceanGroup.add(seabedLabel);
+
+    const seabedLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(ARGO_X + 0.5, -BLOCK_H / 2 - 0.4, ARGO_Z + 0.2),
+        new THREE.Vector3(ARGO_X + 1.6, -BLOCK_H / 2 - 0.85, ARGO_Z - 0.6)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.9 })
+    );
+    oceanGroup.add(seabedLine);
+
+    const depth2000Label = makeTextSprite('— 2000m', '#64748b');
+    depth2000Label.scale.set(2.4, 0.7, 1.0);
+    depth2000Label.position.set(ARGO_X + 0.2, -BLOCK_H / 2 - 0.85, ARGO_Z + 2.4);
+    argoGroup.add(depth2000Label);
+
+    // =========================================================================
+    // 6. ANIMATION & ORGANIC HYDRODYNAMIC SIMULATION LOOP
+    // =========================================================================
+    let isAutoRotating = false;
+    let isWireframeVisible = true;
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+
+      if (isAutoRotating) {
+        oceanGroup.rotation.y += 0.0035;
+      }
+
+      // 1. Water Surface Wave Dynamics & Capillary Caustics
+      for (let i = 0; i < wavePos.count; i++) {
+        const u = wavePos.getX(i);
+        const w = wavePos.getZ(i);
+        const distFromArgo = Math.hypot(u - ARGO_X, w - ARGO_Z);
+        // Primary swell + secondary cross-sea chop
+        const swell = Math.sin(u * 0.8 + elapsed * 1.8) * 0.06 + Math.cos(w * 0.9 + elapsed * 1.5) * 0.05;
+        // Organic capillary ripples expanding outwards from the bobbing Argo float
+        const argoRipple = Math.sin(distFromArgo * 3.8 - elapsed * 4.2) * Math.exp(-distFromArgo * 0.45) * 0.045;
+        wavePos.setY(i, waveOrigY[i] + swell + argoRipple);
+      }
+      waveGeom.computeVertexNormals();
+      waveGeom.attributes.position.needsUpdate = true;
+
+      // 2. PILLAR 3: Organic Float Bobbing Physics (Heave, Pitch & Roll)
+      // Heave (vertical wave displacement directly under float)
+      const heave = Math.sin(ARGO_X * 0.8 + elapsed * 1.8) * 0.06 + Math.cos(ARGO_Z * 0.9 + elapsed * 1.5) * 0.05;
+      floatBobGroup.position.y = FLOAT_SURFACE_Y + heave;
+
+      // Pitch & Roll (Tilting naturally with the wave surface gradient)
+      const slopeX = 0.8 * Math.cos(ARGO_X * 0.8 + elapsed * 1.8) * 0.06;
+      const slopeZ = -0.9 * Math.sin(ARGO_Z * 0.9 + elapsed * 1.5) * 0.05;
+      floatBobGroup.rotation.z = -slopeX * 1.6;
+      floatBobGroup.rotation.x = slopeZ * 1.6;
+
+      // Antenna Satellite Beacon Blinking Cycle (Pulse every 1.6 seconds)
+      const blinkCycle = (Math.sin(elapsed * 4.0) > 0.6) ? 1.0 : 0.0;
+      beaconLight.intensity = blinkCycle * 2.0;
+      beaconMesh.material.opacity = (blinkCycle > 0) ? 1.0 : 0.3;
+
+      // 3. Float Profiling Sounding Cycle (0m down to 1500m)
+      const profileCycle = (Math.sin(elapsed * 0.8) * 0.5 + 0.5);
+      sensorNode.position.y = 6.0 - profileCycle * 9.2;
+
+      // Depth rings gentle pulse
+      depthRings.forEach(r => {
+        const pulse = 1.0 + Math.sin(elapsed * 2.5 + r.phase) * 0.03;
+        r.mesh.scale.set(pulse, 1, pulse);
+      });
+
+      // 4. Swaying Deep-Sea Marine Flora in Oceanic Currents
+      swayingBlades.forEach(sb => {
+        sb.mesh.rotation.z = sb.baseRotZ + Math.sin(elapsed * sb.speed + sb.phase) * 0.12;
+        sb.mesh.rotation.x = sb.baseRotX + Math.cos(elapsed * (sb.speed * 0.8) + sb.phase) * 0.08;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Button Event Listeners
+    const btnRotate = document.getElementById('btn-rotate');
+    btnRotate.addEventListener('click', () => {
+      isAutoRotating = !isAutoRotating;
+      btnRotate.classList.toggle('active', isAutoRotating);
+    });
+
+    const btnWireframe = document.getElementById('btn-wireframe');
+    btnWireframe.addEventListener('click', () => {
+      isWireframeVisible = !isWireframeVisible;
+      btnWireframe.classList.toggle('active', isWireframeVisible);
+      cageLine.visible = isWireframeVisible;
+    });
+
+    const btnReset = document.getElementById('btn-reset');
+    btnReset.addEventListener('click', () => {
+      camera.position.set(24, 18, 24);
+      controls.target.set(0, -0.5, 0);
+      oceanGroup.rotation.y = 0;
+      isAutoRotating = false;
+      btnRotate.classList.remove('active');
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

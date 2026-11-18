@@ -1,0 +1,84 @@
+{
+    "project": "OceanEmbed",
+    "phase": "Phase 7 - Model Explainability & Oceanographic Feature Attribution",
+    "dataset": {
+        "collocated_profiles_count": 75,
+        "unique_argo_floats": 13,
+        "region": "North Indian Ocean (0-25\u00b0N, 50-100\u00b0E)",
+        "features_analyzed": [
+            "sat_sst",
+            "sat_sla",
+            "sat_current_u",
+            "sat_current_v",
+            "sat_current_speed",
+            "latitude",
+            "longitude",
+            "sin_doy",
+            "cos_doy",
+            "sin_month",
+            "cos_month"
+        ],
+        "usable_depths_evaluated": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            50,
+            75,
+            100,
+            125,
+            150,
+            200,
+            250,
+            300,
+            400,
+            500,
+            600,
+            750,
+            1000,
+            1250,
+            1500
+        ],
+        "excluded_depths": [
+            2000
+        ]
+    },
+    "key_findings": {
+        "surface_layer_10m": {
+            "dominant_driver": "sat_sst",
+            "sat_sst_mean_abs_shap": 0.7793896935600558,
+            "sat_sst_relative_pct": 79.37563148178585,
+            "physical_mechanism": "Direct radiative and turbulent air-sea heat exchange governs the mixed layer."
+        },
+        "thermocline_layer_100m": {
+            "dominant_driver": "sat_sla",
+            "sat_sla_mean_abs_shap": 0.6969220386651904,
+            "sat_sla_relative_pct": 37.89691674749449,
+            "secondary_drivers": [
+                "sin_month",
+                "latitude",
+                "sin_doy"
+            ],
+            "physical_mechanism": "Sea Level Anomaly reflects vertical displacement of the main pycnocline and thermocline induced by planetary waves and mesoscale eddies."
+        },
+        "deep_water_layer_500m": {
+            "dominant_driver": "longitude",
+            "longitude_mean_abs_shap": 1.0971174419896965,
+            "longitude_relative_pct": 86.56776576788245,
+            "physical_mechanism": "Thermal structure is decoupled from synoptic surface conditions and governed by basin-scale climatology and intermediate water mass distribution (Red Sea / Persian Gulf outflow vs Bay of Bengal low-salinity intermediate waters)."
+        }
+    },
+    "model_comparison_p5_vs_p6": {
+        "summary": "Phase 6 hyperparameter tuning and VotingRegressor ensembles improved physical fidelity, notably amplifying SLA sensitivity in the thermocline (75-125m) where vertical thermal gradients are steepest."
+    },
+    "limitations": [
+        "Small sample size of 75 collocated profiles across 13 Argo floats limits generalization to extreme anomalous years (e.g. strong IOD or ENSO events).",
+        "Spatial clustering of float trajectories in the Arabian Sea and Bay of Bengal may inflate the attribution of geographic coordinates (latitude, longitude) at deep levels.",
+        "Satellite current velocities (sat_current_u, sat_current_v) exhibited low relative attribution (<5%) due to smooth 0.25\u00b0 gridding damping sub-mesoscale shear."
+    ],
+    "phase_status": {
+        "phase_7_completed": true,
+        "phase_8_started": false
+    }
+}

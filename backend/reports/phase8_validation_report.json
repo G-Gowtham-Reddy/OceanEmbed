@@ -1,0 +1,89 @@
+{
+    "project": "OceanEmbed",
+    "phase": "Phase 8 - Prediction and Model Validation",
+    "dataset": {
+        "collocated_profiles_count": 75,
+        "unique_argo_floats": 13,
+        "region": "North Indian Ocean (0-25\u00b0N, 50-100\u00b0E)",
+        "depth_levels_evaluated": [
+            0,
+            5,
+            10,
+            20,
+            30,
+            50,
+            75,
+            100,
+            125,
+            150,
+            200,
+            250,
+            300,
+            400,
+            500,
+            600,
+            750,
+            1000,
+            1250,
+            1500
+        ],
+        "excluded_depths": [
+            2000
+        ]
+    },
+    "validation_summary": {
+        "surface_layer_10m": {
+            "oof_r2": 0.8671329067444785,
+            "oof_rmse": 0.41579953208387,
+            "oof_mae": 0.29267840266556555,
+            "oof_bias": -0.0015523224907479836
+        },
+        "upper_thermocline_75m": {
+            "oof_r2": 0.31914791191162406,
+            "oof_rmse": 1.6041343244125554,
+            "oof_mae": 1.1751502368587847,
+            "oof_bias": 0.07689551992215522
+        },
+        "main_thermocline_100m": {
+            "oof_r2": 0.3350714657590338,
+            "oof_rmse": 1.4959480561309064,
+            "oof_mae": 1.1235652311754238,
+            "oof_bias": 0.23469035280479167
+        },
+        "intermediate_ocean_300m": {
+            "oof_r2": 0.8908654513519945,
+            "oof_rmse": 0.4452796674791654,
+            "oof_mae": 0.33071969070435236,
+            "oof_bias": -0.012119127499727399
+        },
+        "deep_ocean_500m": {
+            "oof_r2": 0.9559256026884899,
+            "oof_rmse": 0.24674893007771695,
+            "oof_mae": 0.18943548337060329,
+            "oof_bias": 0.021850989406940732
+        },
+        "abyssal_layer_1500m": {
+            "oof_r2": 0.8276045714259332,
+            "oof_rmse": 0.1719310003602943,
+            "oof_mae": 0.1422681802348886,
+            "oof_bias": 0.0002506165074626581
+        }
+    },
+    "physical_plausibility": {
+        "global_temperature_range_valid": true,
+        "predicted_min_temp_c": 4.123334399470899,
+        "predicted_max_temp_c": 31.0262814229544,
+        "inversions_observed_in_situ_pct": 24.0,
+        "inversions_predicted_pct": 10.666666666666668,
+        "peak_gradient_depth_m": 100
+    },
+    "limitations": [
+        "Thermocline variance explanation remains constrained (R\u00b2 ~ 0.32-0.40 between 75m and 125m) due to intense unresolved mesoscale internal waves.",
+        "A small sample size of 75 in-situ Argo profiles across 13 floats limits temporal-spatial coverage across multi-year decadal modes.",
+        "Geostrophic surface current inputs (U, V) exhibit minor explanatory contribution (<6%) due to altimetric resolution limits."
+    ],
+    "phase_status": {
+        "phase_8_completed": true,
+        "phase_9_started": false
+    }
+}

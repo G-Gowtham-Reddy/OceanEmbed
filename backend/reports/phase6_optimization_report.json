@@ -1,0 +1,186 @@
+{
+  "project": "OceanEmbed (SIH26066)",
+  "phase": "Phase 6 - Model Optimization & Ensemble Learning",
+  "timestamp": "2026-11-12T18:35:13.370747",
+  "dataset": {
+    "source": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\data\\processed\\collocated_ocean_profiles.parquet",
+    "profiles_count": 75,
+    "features_count": 11,
+    "target_depths_count": 20
+  },
+  "cross_validation": {
+    "method": "GroupKFold (n_splits=5)",
+    "group_key": "split_group_wmo",
+    "data_leakage": "ZERO_FLOAT_OVERLAP"
+  },
+  "overall_performance": {
+    "phase5_baseline_mean_r2": 0.76979,
+    "phase6_optimized_mean_r2": 0.7477400000000001,
+    "r2_improvement": -0.022049999999999903,
+    "phase5_baseline_mean_rmse": 0.60728,
+    "phase6_optimized_mean_rmse": 0.6422000000000001,
+    "rmse_reduction_degC": -0.03492000000000006
+  },
+  "thermocline_performance_75_to_125m": {
+    "depth_75m": {
+      "p5_r2": 0.3167,
+      "p6_r2": 0.3191
+    },
+    "depth_100m": {
+      "p5_r2": 0.329,
+      "p6_r2": 0.3351
+    },
+    "depth_125m": {
+      "p5_r2": 0.4757,
+      "p6_r2": 0.3984
+    }
+  },
+  "model_registry": {
+    "0": {
+      "filename": "optimized_model_depth_0m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8423653514975904,
+      "rmse": 0.44173497983486804,
+      "mae": 0.31238253771236835
+    },
+    "5": {
+      "filename": "optimized_model_depth_5m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8599664970863055,
+      "rmse": 0.4183250837176152,
+      "mae": 0.2911639943696657
+    },
+    "10": {
+      "filename": "optimized_model_depth_10m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8671329067444785,
+      "rmse": 0.41579953208387,
+      "mae": 0.29267840266556555
+    },
+    "20": {
+      "filename": "optimized_model_depth_20m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8248010845870063,
+      "rmse": 0.5084548229931865,
+      "mae": 0.3374859715223524
+    },
+    "30": {
+      "filename": "optimized_model_depth_30m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.6993320685459173,
+      "rmse": 0.6937660270988988,
+      "mae": 0.4435399248878104
+    },
+    "50": {
+      "filename": "optimized_model_depth_50m.joblib",
+      "architecture": "Tuned_RandomForest",
+      "r2": 0.44008438367422065,
+      "rmse": 1.1802915908697125,
+      "mae": 0.94290336989923
+    },
+    "75": {
+      "filename": "optimized_model_depth_75m.joblib",
+      "architecture": "Tuned_RandomForest",
+      "r2": 0.31914791191162406,
+      "rmse": 1.6041343244125554,
+      "mae": 1.1751502368587847
+    },
+    "100": {
+      "filename": "optimized_model_depth_100m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.3350714657590338,
+      "rmse": 1.4959480561309064,
+      "mae": 1.1235652311754238
+    },
+    "125": {
+      "filename": "optimized_model_depth_125m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.3984000935822759,
+      "rmse": 1.297344806315074,
+      "mae": 0.9916365547842165
+    },
+    "150": {
+      "filename": "optimized_model_depth_150m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.491005055919045,
+      "rmse": 1.1939732545135957,
+      "mae": 0.9322752766099696
+    },
+    "200": {
+      "filename": "optimized_model_depth_200m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.6840826789151304,
+      "rmse": 0.9024283388244404,
+      "mae": 0.685558858099776
+    },
+    "250": {
+      "filename": "optimized_model_depth_250m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8015790692046985,
+      "rmse": 0.6626609366058905,
+      "mae": 0.4848944449616182
+    },
+    "300": {
+      "filename": "optimized_model_depth_300m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.8908654513519945,
+      "rmse": 0.4452796674791654,
+      "mae": 0.33071969070435236
+    },
+    "400": {
+      "filename": "optimized_model_depth_400m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.9453985371132064,
+      "rmse": 0.2847349033953671,
+      "mae": 0.21962020611113103
+    },
+    "500": {
+      "filename": "optimized_model_depth_500m.joblib",
+      "architecture": "Tuned_RandomForest",
+      "r2": 0.9559256026884899,
+      "rmse": 0.24674893007771695,
+      "mae": 0.18943548337060329
+    },
+    "600": {
+      "filename": "optimized_model_depth_600m.joblib",
+      "architecture": "Tuned_RandomForest",
+      "r2": 0.954318905089745,
+      "rmse": 0.24953639573986933,
+      "mae": 0.19400837829730191
+    },
+    "750": {
+      "filename": "optimized_model_depth_750m.joblib",
+      "architecture": "Tuned_RandomForest",
+      "r2": 0.9563243664733029,
+      "rmse": 0.2301351442133815,
+      "mae": 0.18379471235085515
+    },
+    "1000": {
+      "filename": "optimized_model_depth_1000m.joblib",
+      "architecture": "Voting_Ensemble",
+      "r2": 0.9386819359623537,
+      "rmse": 0.2203545785956969,
+      "mae": 0.16873749002299146
+    },
+    "1250": {
+      "filename": "optimized_model_depth_1250m.joblib",
+      "architecture": "Tuned_ExtraTrees",
+      "r2": 0.9226554110097409,
+      "rmse": 0.18056987373060593,
+      "mae": 0.14191445199745253
+    },
+    "1500": {
+      "filename": "optimized_model_depth_1500m.joblib",
+      "architecture": "Tuned_ExtraTrees",
+      "r2": 0.8276045714259332,
+      "rmse": 0.1719310003602943,
+      "mae": 0.1422681802348886
+    }
+  },
+  "persisted_artifacts": {
+    "comparison_metrics_csv": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\phase6_model_optimization_metrics.csv",
+    "depth_comparison_figure": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\figures\\phase6_optimization_comparison.png",
+    "thermocline_parity_figure": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\reports\\figures\\phase6_thermocline_parity_scatter.png",
+    "models_directory": "C:\\Users\\HP\\OneDrive\\Desktop(1)\\Project395\\backend\\models\\phase6"
+  }
+}
